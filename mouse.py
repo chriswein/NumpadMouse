@@ -1,127 +1,126 @@
-from platform import python_branch
-from PyQt5.QtCore import QObject
-import keyboard  # using module keyboard
-from dis import dis
-import pyautogui
-from overlay import DesktopOverlay
 import sys
+import keyboard  # using module keyboard
+import pyautogui
+from helper import *
+
+from PyQt5.QtCore import QObject
+from overlay import DesktopOverlay
+
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QMouseEvent
 from PyQt5 import *
 
+
 display = pyautogui.size()
-
-class KeyPressEater(QObject):
-
-    # subclassing for eventFilter
-
-
-    def eventFilter(self, obj, event):
-        if isinstance(event,QMouseEvent):
-            print("MAUS")
-            return True
-        return False
-
-app = QApplication(sys.argv)
-eater = KeyPressEater()
-app.installEventFilter(eater)
-overlay = DesktopOverlay(app.primaryScreen())
-overlay.show()
-
-def calculate_quadrants(width, height, left=0, top=0):
-    return [
-        [left+width//6, top+height//6],
-        [left+3*width//6, top+height//6],
-        [left+5*width//6, top+height//6],
-        [left+width//6, top+3*height//6],
-        [left+3*width//6, top+3*height//6],
-        [left+5*width//6, top+3*height//6],
-        [left+width//6, top+5*height//6],
-        [left+3*width//6, top+5*height//6],
-        [left+5*width//6, top+5*height//6],
-    ]
-
-
-delta = 20
-move_delta = [
-    [-delta, -delta],
-    [0, -delta],
-    [delta, -delta],
-    [-delta, 0],
-    [0, 0],
-    [delta, 0],
-    [-delta, delta],
-    [0, delta],
-    [delta, delta],
-]
 
 starting_quadrants = calculate_quadrants(display.width, display.height)
 last_width = display.width
 last_height = display.height
 special_mode = False
 
-mapping = { 1: 6, 2: 7, 3: 8, 4: 3, 5: 4, 6: 5, 7: 0, 8: 1, 9: 2}
 
-def key_pressed_callback(key):
+def key_pressed_callback(key, overlay):
     global starting_quadrants, last_width, last_height, display, special_mode, move_delta
     try:
         if key.name == "+":
+            """
+            LEFT Mouseclick
+            """
             pyautogui.click()
+
         elif key.name == "*":
+            """
+            RESET Key to reset everything to start values
+            """
             special_mode = False
             last_width = display.width
             last_height = display.height
             starting_quadrants = calculate_quadrants(
                 last_width, last_height, 0, 0)
             pyautogui.moveTo(
-                    starting_quadrants[mapping[5]][0], starting_quadrants[mapping[5]][1])
+                starting_quadrants[mapping[5]][0], starting_quadrants[mapping[5]][1])
             try:
-                    overlay.setQuadrants(starting_quadrants)
+                overlay.setQuadrants(starting_quadrants)
             except Exception as e:
-                    print(e)
+                # if our overlay crashed, we should still provide mouse capability
+                pass
+
+        elif key.name == "-":
+            """
+            RIGHT Mouseclick
+            """
+            pyautogui.rightClick()
+
         elif key.name == "0":
+            """
+            SPECIAL mode switch. 
+            """
             special_mode = not special_mode
             print(special_mode)
+
         else:
             if not special_mode:
+                """
+                NORMAL mode. Calculate new quadrants and show overlay
+                """
                 quadrant = int(key.name)
+
+                # move mousepointer to target
                 pyautogui.moveTo(
                     starting_quadrants[mapping[quadrant]][0], starting_quadrants[mapping[quadrant]][1])
+
+                # new area to show quadrants in
                 left = starting_quadrants[mapping[quadrant]][0]-(last_width//6)
                 top = starting_quadrants[mapping[quadrant]][1]-(last_height//6)
-                width = last_width//3
-                height = last_height//3
-                last_width = width
-                last_height = height
-                starting_quadrants = calculate_quadrants(width, height, left=left, top=top)
+                width, height = last_width//3, last_height//3
+                last_width, last_height = width, height
+
+                starting_quadrants = calculate_quadrants(
+                    width, height, left=left, top=top)
                 try:
+                    # draws the overlay
                     overlay.setQuadrants(starting_quadrants)
                 except Exception as e:
                     print(e)
             else:
+                """
+                Special mode allows to move the mouse pointer for
+                `delta` pixels.
+                """
                 quadrant = int(key.name)
                 position = pyautogui.position()
                 pyautogui.moveTo(
-                    position.x+move_delta[mapping[quadrant]][0], position.y+move_delta[mapping[quadrant]][1],_pause=False)
+                    position.x+move_delta[mapping[quadrant]][0], position.y+move_delta[mapping[quadrant]][1], _pause=False)
 
     except Exception as e:
-        print(e)
-    print(key)
+        # this is fine...
+        print("An error has occured. {}".format(e))
+
+if __name__ == "__main__":
+    class KeyPressEater(QObject):
+        """
+        Given to QTApp to ignore events
+        """
+        def eventFilter(self, obj, event):
+            if isinstance(event, QMouseEvent):
+                return True
+            return False
 
 
-keyboard.on_press_key("1", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("2", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("3", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("4", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("5", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("6", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("7", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("8", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("9", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("+", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("*", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("0", lambda _: key_pressed_callback(_), suppress=True)
-keyboard.on_press_key("enter", lambda _: sys.exit(), suppress=True)
+    app = QApplication(sys.argv)
+    eater = KeyPressEater()
+    app.installEventFilter(eater)
 
-app.exec_()
-keyboard.wait()
+    # Overlay to give visual feedback to the user
+    overlay = DesktopOverlay(app.primaryScreen())
+    overlay.show()
+    # Register all event listeners
+    for key in list(map(lambda x: str(x), list(range(1, 10))))+["+", "-", "*", "0"]:
+        keyboard.on_press_key(
+            key, lambda _: key_pressed_callback(_, overlay), suppress=True)
+
+    # exit key
+    keyboard.on_press_key(",", lambda _: sys.exit(), suppress=True)
+
+    app.exec_()
+    keyboard.wait()
