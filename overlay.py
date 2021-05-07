@@ -22,6 +22,7 @@ class DesktopOverlay(QMainWindow):
             QtCore.Qt.FramelessWindowHint |
             QtCore.Qt.X11BypassWindowManagerHint
         )
+        self.setWindowModality(Qt.ApplicationModal)
         self.setGeometry(
             QtWidgets.QStyle.alignedRect(
                 QtCore.Qt.LeftToRight, QtCore.Qt.AlignCenter,
@@ -31,23 +32,30 @@ class DesktopOverlay(QMainWindow):
 
         self.quadrants = calculate_quadrants(
             screen.size().width(), screen.size().height(), 0, 0)
+        self.last_width = screen.size().width()
+        self.last_height = screen.size().height()
 
-    def setQuadrants(self, currentQuadrants):
+    def setQuadrants(self, currentQuadrants, last_width, last_height):
         self.quadrants = currentQuadrants
+        self.last_width = last_width
+        self.last_height = last_height 
         self.update()
-        pass
 
     def paintEvent(self, event):
+        """
+        Will be called whenever user gives input and quadrants are updated
+        """
         qp = QPainter()
         qp.begin(self)
-        try:
+        try: 
             for i, quadrant in enumerate(self.quadrants):
-                qp.fillRect(quadrant[0], quadrant[1], 22, 22, QColor(
-                    settings["color"][0], settings["color"][1], settings["color"][2],
-                    150))
                 qp.setPen(QColor(255, 255, 255))
-                qp.setFont(QFont('Decorative', 12))
-                qp.drawText(quadrant[0], quadrant[1]+30, str(inv_map[i]))
+                left, top = quadrant[0]-self.last_width//6, quadrant[1]-self.last_height//6
+                # print(left,top,i)
+                qp.drawRect(left,top, self.last_width//3, self.last_height//3)
+                qp.setFont(QFont('Decorative', 12)) 
+                qp.drawText(left+10,top+30, str(inv_map[i]))
         except Exception as e:
-            print(e)
+            # print(e)
+            None
         qp.end()

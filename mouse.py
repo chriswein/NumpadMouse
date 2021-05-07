@@ -2,10 +2,8 @@ import sys
 import keyboard  # using module keyboard
 import pyautogui
 from helper import *
-
 from PyQt5.QtCore import QObject
 from overlay import DesktopOverlay
-
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QMouseEvent
 from PyQt5 import *
@@ -40,7 +38,7 @@ def key_pressed_callback(key, overlay):
             pyautogui.moveTo(
                 starting_quadrants[mapping[5]][0], starting_quadrants[mapping[5]][1])
             try:
-                overlay.setQuadrants(starting_quadrants)
+                overlay.setQuadrants(starting_quadrants, last_width, last_height),
             except Exception as e:
                 # if our overlay crashed, we should still provide mouse capability
                 pass
@@ -56,7 +54,6 @@ def key_pressed_callback(key, overlay):
             SPECIAL mode switch. 
             """
             special_mode = not special_mode
-            print(special_mode)
 
         else:
             if not special_mode:
@@ -79,9 +76,9 @@ def key_pressed_callback(key, overlay):
                     width, height, left=left, top=top)
                 try:
                     # draws the overlay
-                    overlay.setQuadrants(starting_quadrants)
+                    overlay.setQuadrants(starting_quadrants, last_width, last_height)
                 except Exception as e:
-                    print(e)
+                    None
             else:
                 """
                 Special mode allows to move the mouse pointer for
@@ -94,24 +91,11 @@ def key_pressed_callback(key, overlay):
 
     except Exception as e:
         # this is fine...
-        print("An error has occured. {}".format(e))
+        #print("An error has occured. {}".format(e))
+        None
 
 if __name__ == "__main__":
-    class KeyPressEater(QObject):
-        """
-        Given to QTApp to ignore events
-        """
-        def eventFilter(self, obj, event):
-            if isinstance(event, QMouseEvent):
-                return True
-            return False
-
-
     app = QApplication(sys.argv)
-    eater = KeyPressEater()
-    app.installEventFilter(eater)
-
-    # Overlay to give visual feedback to the user
     overlay = DesktopOverlay(app.primaryScreen())
     overlay.show()
     # Register all event listeners
