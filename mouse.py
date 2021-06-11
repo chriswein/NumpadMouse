@@ -1,12 +1,11 @@
 import sys
-import keyboard  # using module keyboard
+import keyboard 
 import pyautogui
 from helper import *
 from PyQt5.QtCore import QObject
 from overlay import DesktopOverlay
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QMouseEvent
-from PyQt5 import *
 
 
 display = pyautogui.size()
@@ -16,8 +15,13 @@ last_width = display.width
 last_height = display.height
 special_mode = False
 
-
 def key_pressed_callback(key, overlay):
+    """
+    Callback function
+
+    @param string {key} User input 
+    @param DesktopOverlay {overlay} Class to enable rendering guidelines on screen
+    """
     global starting_quadrants, last_width, last_height, display, special_mode, move_delta
     try:
         if key.name == "+":
@@ -91,7 +95,6 @@ def key_pressed_callback(key, overlay):
 
     except Exception as e:
         # this is fine...
-        #print("An error has occured. {}".format(e))
         None
 
 if __name__ == "__main__":

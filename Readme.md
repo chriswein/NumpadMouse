@@ -27,7 +27,13 @@ Control your mousepointer either via:
 | \.      | Right click | 
 | 0      | Mode switch (quadrants and pixel toggle) | 
 | \*      | Reset grid and quadrants | 
+| \,     | Exit the program | 
 
+## Future features that would be useful
+
+* Multimonitor support
+* Disabling the mouse and or overlay while still running
+* Convenience features like menus and preferences
 
 ### Uses
 
