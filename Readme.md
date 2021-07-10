@@ -32,6 +32,7 @@ Control your mousepointer either via:
 ## Future features that would be useful
 
 * Multimonitor support
+* Fix errors on mac os x
 * Disabling the mouse and or overlay while still running
 * Convenience features like menus and preferences
 
