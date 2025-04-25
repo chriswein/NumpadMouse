@@ -1,5 +1,4 @@
 from settings import settings
-from helper import mapping, calculate_quadrants
 
 from PyQt5 import QtCore, Qt
 from PyQt5 import QtWidgets
@@ -9,12 +8,12 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-inv_map = {v: k for k, v in mapping.items()}
-
 
 class DesktopOverlay(QMainWindow):
-    def __init__(self, screen):
+    def __init__(self, screen, helper):
         QMainWindow.__init__(self)
+        self.h = helper
+        self.inv_map = {v: k for k, v in self.h.mapping.items()}
         self.setAttribute(Qt.WA_NoSystemBackground, True)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.setWindowFlags(
@@ -30,7 +29,7 @@ class DesktopOverlay(QMainWindow):
                 QtWidgets.qApp.desktop().availableGeometry()
             ))
 
-        self.quadrants = calculate_quadrants(
+        self.quadrants = self.h.calculate_quadrants(
             screen.size().width(), screen.size().height(), 0, 0)
         self.last_width = screen.size().width()
         self.last_height = screen.size().height()
@@ -54,7 +53,7 @@ class DesktopOverlay(QMainWindow):
                 # print(left,top,i)
                 qp.drawRect(left,top, self.last_width//3, self.last_height//3)
                 qp.setFont(QFont('Decorative', 12)) 
-                qp.drawText(left+10,top+30, str(inv_map[i]))
+                qp.drawText(left+10,top+30, str(self.inv_map[i]))
         except Exception as e:
             # print(e)
             None

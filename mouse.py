@@ -10,11 +10,14 @@ from PyQt5.QtGui import QMouseEvent
 app = QApplication(sys.argv)
 
 display = pyautogui.size()
+_helper = helper()
+_helper.change_mapping({1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8})
 
-starting_quadrants = calculate_quadrants(display.width, display.height)
+starting_quadrants = _helper.calculate_quadrants(display.width, display.height)
 last_width = display.width
 last_height = display.height
 special_mode = False
+
 
 def key_pressed_callback(key, overlay):
     """
@@ -25,23 +28,23 @@ def key_pressed_callback(key, overlay):
     """
     global starting_quadrants, last_width, last_height, display, special_mode, move_delta
     try:
-        if key.name == "insert":
+        if key.name == ".":
             """
             LEFT Mouseclick
             """
             pyautogui.click()
 
-        elif key.name == "delete":
+        elif key.name == ",":
             """
             RESET Key to reset everything to start values
             """
             special_mode = False
             last_width = display.width
             last_height = display.height
-            starting_quadrants = calculate_quadrants(
+            starting_quadrants = _helper.calculate_quadrants(
                 last_width, last_height, 0, 0)
             pyautogui.moveTo(
-                starting_quadrants[mapping[5]][0], starting_quadrants[mapping[5]][1])
+                starting_quadrants[_helper.mapping[5]][0], starting_quadrants[_helper.mapping[5]][1])
             try:
                 overlay.setQuadrants(starting_quadrants, last_width, last_height),
             except Exception as e:
@@ -73,15 +76,15 @@ def key_pressed_callback(key, overlay):
 
                 # move mousepointer to target
                 pyautogui.moveTo(
-                    starting_quadrants[mapping[quadrant]][0], starting_quadrants[mapping[quadrant]][1])
+                    starting_quadrants[_helper.mapping[quadrant]][0], starting_quadrants[_helper.mapping[quadrant]][1])
 
                 # new area to show quadrants in
-                left = starting_quadrants[mapping[quadrant]][0]-(last_width//6)
-                top = starting_quadrants[mapping[quadrant]][1]-(last_height//6)
+                left = starting_quadrants[_helper.mapping[quadrant]][0]-(last_width//6)
+                top = starting_quadrants[_helper.mapping[quadrant]][1]-(last_height//6)
                 width, height = last_width//3, last_height//3
                 last_width, last_height = width, height
 
-                starting_quadrants = calculate_quadrants(
+                starting_quadrants = _helper.calculate_quadrants(
                     width, height, left=left, top=top)
                 try:
                     # draws the overlay
@@ -96,7 +99,7 @@ def key_pressed_callback(key, overlay):
                 quadrant = int(key.name)
                 position = pyautogui.position()
                 pyautogui.moveTo(
-                    position.x+move_delta[mapping[quadrant]][0], position.y+move_delta[mapping[quadrant]][1], _pause=False)
+                    position.x+_helper.move_delta[_helper.mapping[quadrant]][0], position.y+_helper.move_delta[_helper.mapping[quadrant]][1], _pause=False)
 
     except Exception as e:
         # this is fine...
@@ -104,10 +107,10 @@ def key_pressed_callback(key, overlay):
 
 
 if __name__ == "__main__":
-    overlay = DesktopOverlay(app.primaryScreen())
+    overlay = DesktopOverlay(app.primaryScreen(),_helper)
     overlay.show()
     # Register all event listeners
-    for key in list(map(lambda x: str(x), list(range(1, 10))))+["insert", "-", "delete", "0", "esc"]:
+    for key in list(map(lambda x: str(x), list(range(1, 10))))+[".", "-", ",", "0", "esc"]:
         keyboard.on_press_key(
             key, lambda _: key_pressed_callback(_, overlay), suppress=True)
 
