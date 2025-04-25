@@ -7,6 +7,7 @@ from overlay import DesktopOverlay
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QMouseEvent
 
+app = QApplication(sys.argv)
 
 display = pyautogui.size()
 
@@ -24,13 +25,13 @@ def key_pressed_callback(key, overlay):
     """
     global starting_quadrants, last_width, last_height, display, special_mode, move_delta
     try:
-        if key.name == "+":
+        if key.name == "insert":
             """
             LEFT Mouseclick
             """
             pyautogui.click()
 
-        elif key.name == "*":
+        elif key.name == "delete":
             """
             RESET Key to reset everything to start values
             """
@@ -58,7 +59,11 @@ def key_pressed_callback(key, overlay):
             SPECIAL mode switch. 
             """
             special_mode = not special_mode
-
+        elif key.name == "esc":
+            """
+            EXIT
+            """
+            app.exit(0)
         else:
             if not special_mode:
                 """
@@ -97,17 +102,14 @@ def key_pressed_callback(key, overlay):
         # this is fine...
         None
 
+
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
     overlay = DesktopOverlay(app.primaryScreen())
     overlay.show()
     # Register all event listeners
-    for key in list(map(lambda x: str(x), list(range(1, 10))))+["+", "-", "*", "0"]:
+    for key in list(map(lambda x: str(x), list(range(1, 10))))+["insert", "-", "delete", "0", "esc"]:
         keyboard.on_press_key(
             key, lambda _: key_pressed_callback(_, overlay), suppress=True)
 
-    # exit key
-    keyboard.on_press_key(",", lambda _: sys.exit(), suppress=True)
 
     app.exec_()
-    keyboard.wait()

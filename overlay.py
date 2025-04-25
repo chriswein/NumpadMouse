@@ -49,7 +49,7 @@ class DesktopOverlay(QMainWindow):
         qp.begin(self)
         try: 
             for i, quadrant in enumerate(self.quadrants):
-                qp.setPen(QColor(255, 255, 255))
+                qp.setPen(QColor(255, 0, 0))
                 left, top = quadrant[0]-self.last_width//6, quadrant[1]-self.last_height//6
                 # print(left,top,i)
                 qp.drawRect(left,top, self.last_width//3, self.last_height//3)
